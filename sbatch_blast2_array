@@ -1,0 +1,43 @@
+#!/bin/bash
+#SBATCH --job-name=blast2_array
+#SBATCH --output=blast2_array.%A_%a.out
+#SBATCH --error=blast2_array.%A_%a.err
+#SBATCH --time=1-00:00:00
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=200G
+#SBATCH --ntasks=1
+#SBATCH --mail-user=minseo.song@vanderbilt.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../config.sh"
+
+module load blast+/2.14.1
+
+MATE1_CHUNKS=$(find "${VIRAL_ALIGN}/chunks_mate1" -name 'viral_hit_fasta_1.part_*.fas' | wc -l)
+
+if [ "${SLURM_ARRAY_TASK_ID}" -le "${MATE1_CHUNKS}" ]; then
+  CHUNK=$(printf "%03d" "${SLURM_ARRAY_TASK_ID}")
+  QUERY="${VIRAL_ALIGN}/chunks_mate1/viral_hit_fasta_1.part_${CHUNK}.fas"
+  OUT="${VIRAL_ALIGN}/chunks_mate1/res_second_blast_1_part_${CHUNK}.txt"
+else
+  CHUNK_IDX=$((SLURM_ARRAY_TASK_ID - MATE1_CHUNKS))
+  CHUNK=$(printf "%03d" "${CHUNK_IDX}")
+  QUERY="${VIRAL_ALIGN}/chunks_mate2/viral_hit_fasta_2.part_${CHUNK}.fas"
+  OUT="${VIRAL_ALIGN}/chunks_mate2/res_second_blast_2_part_${CHUNK}.txt"
+fi
+
+echo "Running BLAST for chunk ${CHUNK}"
+
+blastn -db "${SECOND_BLAST_DB}" \
+  -query "${QUERY}" \
+  -out "${OUT}" \
+  -word_size 11 \
+  -outfmt 6 \
+  -num_threads 1 \
+  -evalue "${EVALUE_THRESHOLD}" \
+  -max_target_seqs 10
+
+echo "Second BLAST chunk ${SLURM_ARRAY_TASK_ID} finished at: $(date)"
