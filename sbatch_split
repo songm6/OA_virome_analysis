@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH --job-name=split
+#SBATCH --output=split.%j.out
+#SBATCH --error=split.%j.err
+#SBATCH --time=1:00:00
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --ntasks=1
+#SBATCH --mail-user=minseo.song@vanderbilt.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../config.sh"
+
+module load seqkit/2.5.1
+
+mkdir -p "${VIRAL_ALIGN}/chunks_mate1" "${VIRAL_ALIGN}/chunks_mate2"
+
+seqkit split2 "${VIRAL_ALIGN}/viral_hit_fasta_1.fas" \
+  --by-part "${N_CHUNKS}" --force --out-dir "${VIRAL_ALIGN}/chunks_mate1/"
+
+seqkit split2 "${VIRAL_ALIGN}/viral_hit_fasta_2.fas" \
+  --by-part "${N_CHUNKS}" --force --out-dir "${VIRAL_ALIGN}/chunks_mate2/"
+
+echo "Split finished at: $(date)"
