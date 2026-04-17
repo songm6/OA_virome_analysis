@@ -1,0 +1,44 @@
+#!/bin/bash
+#SBATCH --job-name=STAR
+#SBATCH --output=STAR.%j.out
+#SBATCH --error=STAR.%j.err
+#SBATCH --time=48:00:00
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=160G
+#SBATCH --ntasks=1
+#SBATCH --mail-user=minseo.song@vanderbilt.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../config.sh"
+
+module --force purge
+module --ignore_cache load StdEnv/2023 || true
+module --ignore_cache load star/2.7.11b || true
+module --ignore_cache load samtools/1.22.1 || true
+
+STAR_OUTDIR="${ALIGN_DIR}/${SAMPLE_ID}_${SAMPLE_TAG}_rerun"
+mkdir -p "${STAR_OUTDIR}"
+
+OUT_PREFIX="${STAR_OUTDIR}/${SAMPLE_ID}_"
+
+STAR \
+  --genomeDir "${GENOME_DIR}" \
+  --readFilesCommand zcat \
+  --readFilesIn "${TRIMMED}/${SAMPLE_ID}_${SAMPLE_TAG}_R1.fastq.gz" \
+                "${TRIMMED}/${SAMPLE_ID}_${SAMPLE_TAG}_R2.fastq.gz" \
+  --runThreadN 8 \
+  --outFileNamePrefix "${OUT_PREFIX}" \
+  --outSAMtype BAM SortedByCoordinate \
+  --outFilterMultimapNmax 1 \
+  --sjdbGTFfile "${GTF}" \
+  --outReadsUnmapped Fastx \
+  --twopassMode Basic
+
+samtools flagstat "${OUT_PREFIX}Aligned.sortedByCoord.out.bam" > "${OUT_PREFIX}flagstat.txt"
+samtools index "${OUT_PREFIX}Aligned.sortedByCoord.out.bam"
+date > "${OUT_PREFIX}STAR.finished"
+
+echo "STAR finished at: $(date)"
