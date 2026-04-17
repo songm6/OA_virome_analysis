@@ -12,6 +12,10 @@
 export SAMPLE_ID="12814-AL-0001"
 export SAMPLE_TAG="22_S1_L005"
 
+# Input FASTQ files
+export RAW_R1="/path/to/your_read_1.fastq.gz"
+export RAW_R2="/path/to/your_read_2.fastq.gz"
+
 # ---------------------
 # Main directories
 # ---------------------
