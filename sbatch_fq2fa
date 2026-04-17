@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH --job-name=fq2fa
+#SBATCH --output=fq2fa.%j.out
+#SBATCH --error=fq2fa.%j.err
+#SBATCH --time=4:00:00
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=16G
+#SBATCH --ntasks=1
+#SBATCH --mail-user=minseo.song@vanderbilt.edu
+#SBATCH --mail-type=BEGIN,END,FAIL
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/../config.sh"
+
+STAR_OUTDIR="${ALIGN_DIR}/${SAMPLE_ID}_${SAMPLE_TAG}_rerun"
+mkdir -p "${UNMAPPED_DIR}"
+
+python3 /home/songm6/RNAseq-v/fastq2fasta.py \
+  "${STAR_OUTDIR}/${SAMPLE_ID}_Unmapped.out.mate1" > "${UNMAPPED_DIR}/${SAMPLE_ID}_unmapped_1.fas"
+
+python3 /home/songm6/RNAseq-v/fastq2fasta.py \
+  "${STAR_OUTDIR}/${SAMPLE_ID}_Unmapped.out.mate2" > "${UNMAPPED_DIR}/${SAMPLE_ID}_unmapped_2.fas"
+
+echo "FASTQ to FASTA finished at: $(date)"
