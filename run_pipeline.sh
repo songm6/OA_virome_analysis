@@ -9,10 +9,10 @@ set -euo pipefail
 # ---------------------
 # User settings
 # ---------------------
-SAMPLE_ID="12814-AL-0001"
-SAMPLE_TAG="22_S1_L005"
+SAMPLE_ID="SAMPLE ID"
+SAMPLE_TAG="SAMPLE TAG"
 
-BASE="/nobackup/lea_lab/songm6_virome/OA_PBMC_NovaSeqX_17Feb25"
+BASE="/file/path/"
 SLURM_DIR="${BASE}/slurm"
 
 N_CHUNKS=448
