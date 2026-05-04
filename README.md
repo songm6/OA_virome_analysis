@@ -1,3 +1,5 @@
+All required pipeline scripts are available in the scripts branch of this repository.
+
 This pipeline analyzes sequencing data to detect viral sequences present in human samples. It first removes human-derived reads and then screens the remaining reads against viral databases to identify potential viruses. Finally, it refines these matches and counts how many reads support each detected virus.
 
 Step 1: Trim reads
